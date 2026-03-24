@@ -78,7 +78,7 @@ schedule:
 
 ## 📚 Referencias
 
-- [Jules Action](https://github.com/google-labs-code/jules-action)
+- [Jules Invoke Action](https://github.com/google-labs-code/jules-action)
 - [GitHub Actions Workflow Syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
 - [Cron Expression Reference](https://crontab.guru/)
 
