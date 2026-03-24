@@ -1,10 +1,10 @@
-name: Improve Cron Schedules
+name: Improve Cron Schedules with Jules
 
 on:
   workflow_dispatch:
 
 jobs:
-  improve-cron-schedules:
+  improve-with-jules:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -12,72 +12,111 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Improve cron schedule comments
+      - name: Create Jules session and improve cron comments
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+          REPO_FULL_NAME: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cat > /tmp/improve_cron.py << 'EOF'
-          import yaml
-          import sys
+          # Create the prompt
+          PROMPT="Improve the comments in the cron_job.yaml file. Make them more descriptive and clear.
 
-          # Read the YAML file
-          with open('cron_job.yaml', 'r') as f:
-              data = yaml.safe_load(f)
+          For each cron schedule:
+          - Keep the time conversion format (UTC - MX, CLT)
+          - Add what the schedule triggers
+          - Be concise but informative
 
-          # Improved comments for each schedule
-          schedules = data['on']['schedule']
-          improved_comments = {
-              '0 13 * * 1-5': 'Weekdays 1 PM UTC (7 AM MX, 10 AM CLT) - Check for manifests',
-              '0 15 * * 1-5': 'Weekdays 3 PM UTC (9 AM MX, 12 PM CLT) - Check for manifests',
-              '0 17 * * 1-5': 'Weekdays 5 PM UTC (11 AM MX, 2 PM CLT) - Check for manifests',
-              '0 19 * * 1-5': 'Weekdays 7 PM UTC (1 PM MX, 4 PM CLT) - Check for manifests',
-              '0 21 * * 1-5': 'Weekdays 9 PM UTC (3 PM MX, 6 PM CLT) - Check for manifests',
-              '0 23 * * 1-5': 'Weekdays 11 PM UTC (5 PM MX, 8 PM CLT) - Check for manifests',
-              '0 1 * * 2-6': 'Tue-Sat 1 AM UTC (7 PM MX, 10 PM CLT) - Check for manifests',
-              '0 3 * * 2-6': 'Tue-Sat 3 AM UTC (9 PM MX, 12 AM CLT) - Check for manifests'
+          Current schedules:
+          - cron: \"0 13 * * 1-5\" # 13 UTC - 7 AM MX, 10 AM CLT
+          - cron: \"0 15 * * 1-5\" # 15 UTC - 9 AM MX, 12 PM CLT
+          - cron: \"0 17 * * 1-5\" # 17 UTC - 11 AM MX, 2 PM CLT
+          - cron: \"0 19 * * 1-5\" # 19 UTC - 1 PM MX, 4 PM CLT
+          - cron: \"0 21 * * 1-5\" # 21 UTC - 3 PM MX, 6 PM CLT
+          - cron: \"0 23 * * 1-5\" # 23 UTC - 5 PM MX, 8 PM CLT
+          - cron: \"0 1 * * 2-6\"  # 1 UTC - 7 PM MX, 10 PM CLT
+          - cron: \"0 3 * * 2-6\"  # 3 UTC - 9 PM MX, 12 AM CLT
+
+          Example improvement:
+          - cron: \"0 13 * * 1-5\"  # Weekdays 1 PM UTC (7 AM MX, 10 AM CLT) - Check for manifests
+
+          Make all comments consistent and clear."
+
+          # Get latest commit info
+          COMMIT_HASH=$(git rev-parse HEAD)
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+
+          # Create Jules request payload
+          cat > /tmp/jules_request.json << 'EOF'
+          {
+            "prompt": "$PROMPT",
+            "sourceContext": {
+              "source": "sources/github/$REPO_FULL_NAME",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "requirePlanApproval": false,
+            "automationMode": "AUTO_CREATE_PR"
           }
-
-          # Update the YAML file preserving structure
-          output = 'name: cron_trigger_deploy\n\non:\n  schedule:\n'
-          output += '    # The cron schedule is set to run at the following times, from Monday through Friday:\n'
-
-          for schedule in schedules:
-              cron_expr = schedule['cron']
-              comment = improved_comments.get(cron_expr, cron_expr)
-              output += f'    - cron: "{cron_expr}" # {comment}\n'
-
-          output += '\ndefaults:\n  run:\n    shell: bash\n\njobs:\n  trigger:\n'
-          output += '    runs-on: ubuntu-24.04\n    timeout-minutes: 2\n    steps:\n'
-          output += '      - name: Execute workflow_dispatch on frappe for manifests\n'
-          output += '        run: |\n'
-          output += '          curl -X POST \\\n'
-          output += '              -H "Accept: application/vnd.github.v3+json" \\\n'
-          output += '              -H "Content-Type: application/json" \\\n'
-          output += '              -H "Authorization: token ${{ secrets.GH_TOKEN_ACTIONS }}" \\\n'
-          output += "              --data '{\"ref\": \"master\", \"inputs\": {\"choice\": \"develop\"}}' \\\n"
-          output += '              https://api.github.com/repos/tech/custom-apps/actions/workflows/build_and_deploy.yaml/dispatches\n'
-          output += "        if: github.event_name == 'schedule'\n"
-
-          with open('cron_job.yaml', 'w') as f:
-              f.write(output)
-
-          print("✓ Updated cron_job.yaml with improved comments")
           EOF
 
-          python3 /tmp/improve_cron.py
+          # Fix JSON formatting
+          sed -i "s|\$PROMPT|$(printf '%s\n' "$PROMPT" | sed -e 's/[\/&]/\\&/g')|g" /tmp/jules_request.json
 
-      - name: Create Pull Request
+          # Call Jules API to create session
+          echo "Creating Jules session..."
+          RESPONSE=$(curl -s -X POST https://julius.googleapis.com/v1alpha/sessions \
+            -H "Content-Type: application/json" \
+            -H "X-Goog-Api-Key: $JULES_API_KEY" \
+            -d @/tmp/julius_request.json)
+
+          echo "Jules API Response:"
+          echo "$RESPONSE" | jq '.'
+
+          # Extract session name if successful
+          SESSION_NAME=$(echo "$RESPONSE" | jq -r '.name // empty')
+
+          if [ -n "$SESSION_NAME" ]; then
+            echo "✓ Jules session created: $SESSION_NAME"
+
+            # Poll for session completion
+            MAX_ATTEMPTS=60
+            ATTEMPT=0
+            while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+              sleep 5
+              STATUS=$(curl -s -X GET "https://julius.googleapis.com/v1alpha/$SESSION_NAME" \
+                -H "X-Goog-Api-Key: $JULES_API_KEY" | jq -r '.state // empty')
+
+              echo "Session state: $STATUS"
+
+              if [ "$STATUS" = "COMPLETED" ]; then
+                echo "✓ Jules session completed"
+                break
+              fi
+
+              ATTEMPT=$((ATTEMPT + 1))
+            done
+          else
+            echo "⚠ Failed to create Jules session"
+            echo "$RESPONSE"
+          fi
+
+      - name: Create Pull Request if changes exist
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: 'Improve cron schedule comments'
           title: 'Improve cron schedule comments for clarity'
           body: |
-            This PR improves the comments in `cron_job.yaml` for better clarity:
+            This PR improves the comments in `cron_job.yaml` using Jules AI.
 
+            **Improvements:**
             - Added descriptive timezone information
             - Clarified what each schedule triggers
-            - Made comments consistent across all schedules
+            - Made comments consistent and clear
 
-            Example improvements:
+            **Example:**
             - Before: `# 13 UTC - 7 AM MX, 10 AM CLT`
             - After: `# Weekdays 1 PM UTC (7 AM MX, 10 AM CLT) - Check for manifests`
-          branch: improve/cron-comments
+          branch: improve/cron-comments-jules
           delete-branch: true
+          token: ${{ secrets.GITHUB_TOKEN }}
