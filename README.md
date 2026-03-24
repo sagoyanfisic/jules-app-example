@@ -4,15 +4,21 @@ Workflow de GitHub Actions que usa **Jules AI** para mejorar automáticamente lo
 
 ## 🚀 Configuración Inicial
 
-### 1. Crear cuenta y API key en Jules
+### 1. Configurar Jules en tu cuenta
 
-1. Ve a [Jules Google Developers](https://developers.google.com/jules/api)
+1. Ve a [jules.google](https://jules.google)
 2. Autentica con tu cuenta de Google
-3. Ve a **Settings** en la app de Jules
-4. Crea un nuevo **API key** (máximo 3 por cuenta)
-5. Copia el API key
+3. Acepta los términos de privacidad
+4. Conecta tu cuenta de GitHub (OAuth)
+5. Selecciona los repositorios que Jules puede acceder (este repositorio)
 
-### 2. Agregar el API key a GitHub Secrets
+### 2. Obtener API Key
+
+1. En [jules.google](https://jules.google), ve a **Settings**
+2. Crea un nuevo **API Key** (máximo 3 por cuenta)
+3. Copia el API key
+
+### 3. Agregar API Key a GitHub Secrets
 
 1. Ve a tu repositorio → **Settings** → **Secrets and variables** → **Actions**
 2. Click en **New repository secret**
@@ -20,7 +26,7 @@ Workflow de GitHub Actions que usa **Jules AI** para mejorar automáticamente lo
 4. Value: Pega tu API key de Jules
 5. Click **Add secret**
 
-### 3. Ejecutar el workflow
+### 4. Ejecutar el workflow
 
 1. Ve a **Actions** → **Improve Cron Schedules with Jules**
 2. Click en **Run workflow**
@@ -29,11 +35,11 @@ Workflow de GitHub Actions que usa **Jules AI** para mejorar automáticamente lo
 
 ## 📋 Cómo Funciona
 
-1. **Disparas el workflow** manualmente
-2. **Jules recibe el prompt** con instrucciones
-3. **Jules analiza** el archivo `cron_job.yaml`
-4. **Jules genera mejoras** en los comentarios
-5. **Se crea un PR** automáticamente con los cambios mejorados
+1. **Disparas el workflow** manualmente desde GitHub Actions
+2. **El workflow envía un prompt a Jules** con instrucciones claras
+3. **Jules analiza** el archivo `cron_job.yaml` en tu repositorio
+4. **Jules crea mejoras** en los comentarios de los schedules
+5. **Se genera un PR** automáticamente con los cambios
 
 ## 📁 Estructura del Proyecto
 
@@ -62,19 +68,20 @@ schedule:
   - cron: "0 15 * * 1-5"  # Weekdays 3 PM UTC (9 AM MX, 12 PM CLT) - Check for manifests
 ```
 
-## 🔐 Seguridad
+## 🔒 Seguridad
 
 - **Nunca** commitees API keys al repositorio
 - Almacena claves en GitHub Repository Secrets
 - Usa `${{ secrets.JULES_API_KEY }}` en workflows
-- Las API keys expuestas públicamente serán deshabilitadas automáticamente por Google
+- Jules accede solo a los repositorios que autorizaste
+- Las API keys comprometidas serán deshabilitadas automáticamente
 
-## 📚 Referencias
+## 📚 Documentación Oficial
 
-- [Jules API Documentation](https://developers.google.com/jules/api)
-- [Jules Authentication](https://jules.google/docs/api/reference/authentication/)
-- [GitHub Actions Workflow Syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
-- [Cron Expression Reference](https://crontab.guru/)
+- [Jules Documentation](https://jules.google/docs/)
+- [Jules Guides](https://jules.google/docs/guides/)
+- [Jules Tools (CLI)](https://jules.google/docs/guides/tools/)
+- [Jules REST API Reference](https://jules.google/docs/rest-api/)
 
 ## 📄 Licencia
 
