@@ -9,14 +9,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        # with:
+        #   token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Jules session and improve cron comments
         env:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
           REPO_FULL_NAME: ${{ github.repository }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Create the prompt
           PROMPT="Improve the comments in the cron_job.yaml file. Make them more descriptive and clear.
@@ -101,22 +101,22 @@ jobs:
             echo "$RESPONSE"
           fi
 
-      - name: Create Pull Request if changes exist
-        uses: peter-evans/create-pull-request@v5
-        with:
-          commit-message: 'Improve cron schedule comments'
-          title: 'Improve cron schedule comments for clarity'
-          body: |
-            This PR improves the comments in `cron_job.yaml` using Jules AI.
+      # - name: Create Pull Request if changes exist
+      #   uses: peter-evans/create-pull-request@v5
+      #   with:
+      #     commit-message: 'Improve cron schedule comments'
+      #     title: 'Improve cron schedule comments for clarity'
+      #     body: |
+      #       This PR improves the comments in `cron_job.yaml` using Jules AI.
 
-            **Improvements:**
-            - Added descriptive timezone information
-            - Clarified what each schedule triggers
-            - Made comments consistent and clear
+      #       **Improvements:**
+      #       - Added descriptive timezone information
+      #       - Clarified what each schedule triggers
+      #       - Made comments consistent and clear
 
-            **Example:**
-            - Before: `# 13 UTC - 7 AM MX, 10 AM CLT`
-            - After: `# Weekdays 1 PM UTC (7 AM MX, 10 AM CLT) - Check for manifests`
-          branch: improve/cron-comments-jules
-          delete-branch: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+      #       **Example:**
+      #       - Before: `# 13 UTC - 7 AM MX, 10 AM CLT`
+      #       - After: `# Weekdays 1 PM UTC (7 AM MX, 10 AM CLT) - Check for manifests`
+      #     branch: improve/cron-comments-jules
+      #     delete-branch: true
+      #     token: ${{ secrets.GITHUB_TOKEN }}
