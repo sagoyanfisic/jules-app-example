@@ -1,0 +1,41 @@
+name: Improve Cron Schedules with Jules
+
+on:
+  workflow_dispatch:
+
+jobs:
+  improve-cron-schedules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Improve cron schedule comments with Jules
+        uses: google-labs-code/jules-action@v1
+        with:
+          prompt: |
+            Improve the comments in the cron_job.yaml file for the schedule section.
+
+            For each cron schedule, enhance the inline comments to be more descriptive and clearer:
+            - Keep the time conversion format (UTC - MX, CLT)
+            - Add explanation of what the schedule triggers (deployment check)
+            - Keep it concise but informative
+
+            Current schedules to improve:
+            - cron: "0 13 * * 1-5" # 13 UTC - 7 AM MX, 10 AM CLT
+            - cron: "0 15 * * 1-5" # 15 UTC - 9 AM MX, 12 PM CLT
+            - cron: "0 17 * * 1-5" # 17 UTC - 11 AM MX, 2 PM CLT
+            - cron: "0 19 * * 1-5" # 19 UTC - 1 PM MX, 4 PM CLT
+            - cron: "0 21 * * 1-5" # 21 UTC - 3 PM MX, 6 PM CLT
+            - cron: "0 23 * * 1-5" # 23 UTC - 5 PM MX, 8 PM CLT
+            - cron: "0 1 * * 2-6"  # 1 UTC - 7 PM MX, 10 PM CLT
+            - cron: "0 3 * * 2-6"  # 3 UTC - 9 PM MX, 12 AM CLT
+
+            Example of improved format:
+            - cron: "0 13 * * 1-5"  # Weekdays 1 PM UTC (7 AM MX, 10 AM CLT) - Check for manifests
+
+            Make all the comments consistent and clear.
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          starting_branch: main
+          include_last_commit: true
+          include_commit_log: false

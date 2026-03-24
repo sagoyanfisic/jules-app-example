@@ -1,0 +1,13 @@
+{
+  "name": "jules-cron-documenter",
+  "version": "1.0.0",
+  "description": "Jules AI Agent workflow for documenting cron schedules",
+  "keywords": [
+    "jules",
+    "ai-agent",
+    "cron",
+    "github-actions"
+  ],
+  "author": "",
+  "license": "MIT"
+}
