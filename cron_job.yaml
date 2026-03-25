@@ -1,15 +1,16 @@
 name: cron_trigger_deploy
 on:
-  schedule:
-    # The cron schedule is set to run at the following times, from Monday through Friday:
-    - cron: "0 13 * * 1-5" # 13 UTC - 7 AM MX, 10 AM CLT
-    - cron: "0 15 * * 1-5" # 15 UTC - 9 AM MX, 12 PM CLT
-    - cron: "0 17 * * 1-5" # 17 UTC - 11 AM MX, 2 PM CLT
-    - cron: "0 19 * * 1-5" # 19 UTC - 1 PM MX, 4 PM CLT
-    - cron: "0 21 * * 1-5" # 21 UTC - 3 PM MX, 6 PM CLT
-    - cron: "0 23 * * 1-5" # 23 UTC - 5 PM MX, 8 PM CLT
-    - cron: "0 1 * * 2-6"  # 1 UTC - 7 PM MX, 10 PM CLT
-    - cron: "0 3 * * 2-6"  # 3 UTC - 9 PM MX, 12 AM CLT
+  workflow_dispatch:
+#  schedule:
+#    # The cron schedule is set to run at the following times, from Monday through Friday:
+#    - cron: "0 13 * * 1-5" # 13 UTC - 7 AM MX, 10 AM CLT
+#    - cron: "0 15 * * 1-5" # 15 UTC - 9 AM MX, 12 PM CLT
+#    - cron: "0 17 * * 1-5" # 17 UTC - 11 AM MX, 2 PM CLT
+#    - cron: "0 19 * * 1-5" # 19 UTC - 1 PM MX, 4 PM CLT
+#    - cron: "0 21 * * 1-5" # 21 UTC - 3 PM MX, 6 PM CLT
+#    - cron: "0 23 * * 1-5" # 23 UTC - 5 PM MX, 8 PM CLT
+#    - cron: "0 1 * * 2-6"  # 1 UTC - 7 PM MX, 10 PM CLT
+#    - cron: "0 3 * * 2-6"  # 3 UTC - 9 PM MX, 12 AM CLT
 
 defaults:
   run:
@@ -28,4 +29,4 @@ jobs:
               -H "Authorization: token ${{ secrets.GH_TOKEN_ACTIONS }}" \
               --data '{"ref": "master", "inputs": {"choice": "develop"}}' \
               https://api.github.com/repos/tech/custom-apps/actions/workflows/build_and_deploy.yaml/dispatches
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'workflow_dispatch'
